@@ -55,6 +55,7 @@
         FROM acd_jly_site a
                  LEFT JOIN acd_dangri_gzl_ry b ON a.usercode = b.usercode
         WHERE date(a.reporttime) = #{dateStr}
+          AND date(b.tjtime) = #{dateStr}
           AND (a.usercode, a.reporttime) IN
             (SELECT usercode, MAX(reporttime) FROM acd_jly_site
             WHERE date(reporttime) = #{dateStr} GROUP BY usercode)
