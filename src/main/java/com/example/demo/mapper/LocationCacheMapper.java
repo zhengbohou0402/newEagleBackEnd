@@ -25,6 +25,8 @@ public interface LocationCacheMapper {
     LocationCache findByAddress(@Param("address") String address);
     
     LocationCache findValidByAddress(@Param("address") String address, @Param("currentTime") String currentTime);
+
+    List<LocationCache> findValidByAddressBatch(@Param("addresses") List<String> addresses, @Param("currentTime") String currentTime);
     
     LocationCache findByAddressLike(@Param("addressPattern") String addressPattern);
     

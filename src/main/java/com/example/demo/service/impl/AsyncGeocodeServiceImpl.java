@@ -2,7 +2,9 @@ package com.example.demo.service.impl;
 
 import com.example.demo.entity.GeocodeResult;
 import com.example.demo.entity.HeatData;
+import com.example.demo.entity.LocationCache;
 import com.example.demo.entity.PrplCheckTask;
+import com.example.demo.mapper.LocationCacheMapper;
 import com.example.demo.mapper.PrplCheckTaskMapper;
 import com.example.demo.service.AsyncGeocodeService;
 import com.example.demo.service.HeatDataCacheService;
@@ -13,16 +15,29 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class AsyncGeocodeServiceImpl implements AsyncGeocodeService {
 
     private static final Logger logger = LoggerFactory.getLogger(AsyncGeocodeServiceImpl.class);
+    private static final DateTimeFormatter CACHE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+    private static final double CD_MIN_LNG = 102.5;
+    private static final double CD_MAX_LNG = 104.9;
+    private static final double CD_MIN_LAT = 30.0;
+    private static final double CD_MAX_LAT = 31.5;
 
     @Autowired
     private PrplCheckTaskMapper prplCheckTaskMapper;
+
+    @Autowired
+    private LocationCacheMapper locationCacheMapper;
 
     @Autowired
     private LocationAddressConverter addressConverter;
@@ -30,110 +45,166 @@ public class AsyncGeocodeServiceImpl implements AsyncGeocodeService {
     @Autowired
     private HeatDataCacheService cacheService;
 
-    // 成都区域经纬度边界
-    private static final double CD_MIN_LNG = 102.5;
-    private static final double CD_MAX_LNG = 104.9;
-    private static final double CD_MIN_LAT = 30.0;
-    private static final double CD_MAX_LAT = 31.5;
-
     @Override
     public void doGeocodeAddresses(LocalDate date, String dateStr) {
-        logger.info("开始异步地址解析任务: date={}", dateStr);
+        logger.info("Start async geocode task: date={}", dateStr);
 
         try {
             List<PrplCheckTask> tasks = prplCheckTaskMapper.getMissingCoordinateTasksByDate(dateStr);
+            Map<String, Integer> addressCounts = buildAddressCounts(tasks);
 
-            if (tasks == null || tasks.isEmpty()) {
-                logger.info("没有需要解析的地址数据");
+            if (addressCounts.isEmpty()) {
+                logger.info("No addresses need geocoding: date={}", dateStr);
+                cacheService.setStats(date, 0, 0, 0, 0);
                 cacheService.setCacheComplete(date);
                 return;
             }
 
-            List<PrplCheckTask> tasksToGeocode = new ArrayList<>(tasks);
-
-            logger.info("需要解析的地址数量: {}", tasksToGeocode.size());
-
-            if (tasksToGeocode.isEmpty()) {
-                cacheService.setCacheComplete(date);
-                return;
-            }
-
-            int total = tasksToGeocode.size();
+            int total = addressCounts.values().stream().mapToInt(Integer::intValue).sum();
             int processed = 0;
             int successCount = 0;
             int failCount = 0;
             cacheService.setStats(date, total, processed, successCount, failCount);
 
-            List<HeatData> geocodeResults = new ArrayList<>();
+            List<String> addresses = new ArrayList<>(addressCounts.keySet());
+            Map<String, LocationCache> validCacheByAddress = findValidCacheByAddress(addresses);
+            List<HeatData> pendingHeatData = new ArrayList<>();
 
-            for (PrplCheckTask task : tasksToGeocode) {
+            logger.info("Async geocode workload: rows={}, uniqueAddresses={}, cachedAddresses={}",
+                    total, addresses.size(), validCacheByAddress.size());
+
+            for (String address : addresses) {
+                int rowCount = addressCounts.get(address);
+
                 if (Thread.currentThread().isInterrupted()) {
-                    logger.info("异步地址解析被取消: date={}, 已处理={}/{}", dateStr, processed, total);
+                    int progress = calculateProgress(processed, total);
+                    logger.info("Async geocode task cancelled: date={}, processed={}/{}", dateStr, processed, total);
                     cacheService.setProcessing(date, false);
+                    cacheService.setProgress(date, progress);
                     return;
                 }
-                try {
-                    boolean success = false;
-                    GeocodeResult result = addressConverter.geocode(task.getChecksite());
-                    if (result != null && result.getStatus() == 0 && result.getResult() != null
-                            && result.getResult().getLocation() != null) {
 
-                        Double lng = result.getResult().getLocation().getLng();
-                        Double lat = result.getResult().getLocation().getLat();
-
-                        // 过滤非成都区域的坐标
-                        if (lng >= CD_MIN_LNG && lng <= CD_MAX_LNG
-                                && lat >= CD_MIN_LAT && lat <= CD_MAX_LAT) {
-                            HeatData heatData = new HeatData();
-                            heatData.setLng(lng);
-                            heatData.setLat(lat);
-                            heatData.setCount(1);
-                            geocodeResults.add(heatData);
-                            successCount++;
-                            success = true;
-                        }
-                    }
-                    if (!success) {
-                        failCount++;
-                    }
-                } catch (Exception e) {
-                    logger.debug("地址解析失败: {}, {}", task.getChecksite(), e.getMessage());
-                    failCount++;
+                boolean success;
+                LocationCache cached = validCacheByAddress.get(address);
+                if (cached != null) {
+                    success = appendHeatData(pendingHeatData, cached.getLongitude(), cached.getLatitude(), rowCount);
+                } else {
+                    success = geocodeAddress(address, rowCount, pendingHeatData);
                 }
 
-                processed++;
+                processed += rowCount;
+                if (success) {
+                    successCount += rowCount;
+                } else {
+                    failCount += rowCount;
+                }
+
                 cacheService.setStats(date, total, processed, successCount, failCount);
+                cacheService.setProgress(date, calculateProgress(processed, total));
 
-                if (processed % 10 == 0 || processed == total) {
-                    int progress = (int) ((processed * 100.0) / total);
-                    cacheService.setProgress(date, progress);
-
-                    if (geocodeResults.size() >= 50) {
-                        cacheService.mergeHeatData(date, geocodeResults);
-                        geocodeResults.clear();
-                    }
-                }
-
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    break;
+                if (pendingHeatData.size() >= 50) {
+                    cacheService.mergeHeatData(date, pendingHeatData);
+                    pendingHeatData.clear();
                 }
             }
 
-            if (!geocodeResults.isEmpty()) {
-                cacheService.mergeHeatData(date, geocodeResults);
+            if (!pendingHeatData.isEmpty()) {
+                cacheService.mergeHeatData(date, pendingHeatData);
             }
 
-            logger.info("异步地址解析完成: 总数={}, 成功={}, 失败={}", total, successCount, failCount);
-
+            logger.info("Async geocode completed: date={}, total={}, success={}, failed={}",
+                    dateStr, total, successCount, failCount);
             cacheService.setProgress(date, 100);
             cacheService.setCacheComplete(date);
-
         } catch (Exception e) {
-            logger.error("异步地址解析任务失败: {}", e.getMessage(), e);
+            logger.error("Async geocode task failed: date={}, {}", dateStr, e.getMessage(), e);
             cacheService.setProcessing(date, false);
         }
+    }
+
+    private Map<String, Integer> buildAddressCounts(List<PrplCheckTask> tasks) {
+        Map<String, Integer> addressCounts = new LinkedHashMap<>();
+        if (tasks == null || tasks.isEmpty()) {
+            return addressCounts;
+        }
+
+        for (PrplCheckTask task : tasks) {
+            if (task == null || task.getChecksite() == null) {
+                continue;
+            }
+            String address = task.getChecksite().trim();
+            if (address.isEmpty()) {
+                continue;
+            }
+            addressCounts.put(address, addressCounts.getOrDefault(address, 0) + 1);
+        }
+        return addressCounts;
+    }
+
+    private Map<String, LocationCache> findValidCacheByAddress(List<String> addresses) {
+        Map<String, LocationCache> result = new LinkedHashMap<>();
+        if (addresses == null || addresses.isEmpty()) {
+            return result;
+        }
+
+        String now = CACHE_TIME_FORMATTER.format(LocalDateTime.now());
+        int batchSize = 500;
+        for (int start = 0; start < addresses.size(); start += batchSize) {
+            int end = Math.min(start + batchSize, addresses.size());
+            List<LocationCache> cachedItems = locationCacheMapper.findValidByAddressBatch(
+                    addresses.subList(start, end), now);
+            if (cachedItems == null || cachedItems.isEmpty()) {
+                continue;
+            }
+
+            for (LocationCache item : cachedItems) {
+                if (item != null && item.getAddress() != null) {
+                    result.putIfAbsent(item.getAddress(), item);
+                }
+            }
+        }
+        return result;
+    }
+
+    private boolean geocodeAddress(String address, int rowCount, List<HeatData> pendingHeatData) {
+        try {
+            GeocodeResult result = addressConverter.geocode(address);
+            if (result == null || result.getStatus() != 0 || result.getResult() == null
+                    || result.getResult().getLocation() == null) {
+                return false;
+            }
+
+            Double lng = result.getResult().getLocation().getLng();
+            Double lat = result.getResult().getLocation().getLat();
+            return appendHeatData(pendingHeatData, lng, lat, rowCount);
+        } catch (Exception e) {
+            logger.debug("Address geocode failed: address={}, {}", address, e.getMessage());
+            return false;
+        }
+    }
+
+    private boolean appendHeatData(List<HeatData> heatDataList, Double lng, Double lat, int count) {
+        if (lng == null || lat == null || !isInChengdu(lng, lat)) {
+            return false;
+        }
+
+        HeatData heatData = new HeatData();
+        heatData.setLng(lng);
+        heatData.setLat(lat);
+        heatData.setCount(count);
+        heatDataList.add(heatData);
+        return true;
+    }
+
+    private boolean isInChengdu(double lng, double lat) {
+        return lng >= CD_MIN_LNG && lng <= CD_MAX_LNG
+                && lat >= CD_MIN_LAT && lat <= CD_MAX_LAT;
+    }
+
+    private int calculateProgress(int processed, int total) {
+        if (total <= 0) {
+            return 100;
+        }
+        return Math.min(100, Math.max(0, (int) ((processed * 100.0) / total)));
     }
 }

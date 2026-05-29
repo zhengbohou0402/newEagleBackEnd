@@ -66,6 +66,16 @@
           AND expire_time >= #{currentTime}
     </select>
 
+    <select id="findValidByAddressBatch" resultMap="LocationCacheResultMap">
+        SELECT id, longitude, latitude, address, create_time, update_time, expire_time
+        FROM acd_location_address_cache
+        WHERE expire_time >= #{currentTime}
+          AND address IN
+          <foreach collection="addresses" item="address" separator="," open="(" close=")">
+              #{address}
+          </foreach>
+    </select>
+
     <select id="findByAddressLike" resultMap="LocationCacheResultMap">
         SELECT id, longitude, latitude, address, create_time, update_time, expire_time
         FROM acd_location_address_cache

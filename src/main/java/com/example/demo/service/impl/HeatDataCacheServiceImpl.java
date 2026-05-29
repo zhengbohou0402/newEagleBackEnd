@@ -62,9 +62,6 @@ public class HeatDataCacheServiceImpl implements HeatDataCacheService {
     @Override
     public void setProcessing(LocalDate date, boolean processing) {
         processingFlags.put(getKey(date), processing);
-        if (!processing) {
-            progressMap.put(getKey(date), 100);
-        }
     }
 
     @Override
