@@ -120,4 +120,291 @@
         ORDER BY comName desc
     </select>
 
+    <!-- ==================== 新增表：周期-市公司 ==================== -->
+    <select id="getZhouqiQsData" resultType="com.example.demo.entity.AcdZhouqiQs">
+        select
+        tjdate,
+        tjdate as maxTjTime,
+        comcode_sgs,
+        comname_sgs,
+        chakan_zt,
+        cuiding_zt,
+        dingsun_zt,
+        zhifu_zt,
+        zhouqi_zt,
+        zhouqi_wyn,
+        zhouqi_wys
+        from acd_zhouqi_qs
+        where 1 = 1
+        and tjdate = #{tjDate}
+        <if test="comnameSgs != null and comnameSgs != ''">
+            and comname_sgs like concat('%', #{comnameSgs}, '%')
+        </if>
+        order by zhouqi_zt desc
+    </select>
+
+    <!-- ==================== 新增表：周期-部门 ==================== -->
+    <select id="getZhouqiBmData" resultType="com.example.demo.entity.AcdZhouqiBm">
+        select
+        tjdate,
+        tjdate as maxTjTime,
+        comcode,
+        comname,
+        zhouqi_zt,
+        zhouqi_wyn,
+        zhouqi_wys,
+        chakan_zt,
+        cuiding_zt,
+        dingsun_zt,
+        zhifu_zt
+        from acd_zhouqi_bm
+        where 1 = 1
+        and tjdate = #{tjDate}
+        and comcode like '510199%'
+        and comcode not in ('51019928','51019926','51019911','51019907','51019944')
+        <if test="comname != null and comname != ''">
+            and comname like concat('%', #{comname}, '%')
+        </if>
+        order by zhouqi_zt desc
+    </select>
+
+    <!-- ==================== 新增表：综合赔付率-客户群 ==================== -->
+    <select id="getZhpflKhqData" resultType="com.example.demo.entity.AcdZhpflKhq">
+        select
+        tjdate,
+        tjdate as maxTjTime,
+        comcode_sgs,
+        comname_sgs,
+        khq,
+        riskcode,
+        jbf,
+        pfcb,
+        fy,
+        glfy,
+        cblr,
+        zhcbl,
+        zhfyl,
+        zhpfl,
+        jbf_qn,
+        pfcb_qn,
+        fy_qn,
+        glfy_qn,
+        cblr_qn,
+        zhcbl_qn,
+        zhfyl_qn,
+        zhpfl_qn,
+        zhcbl_tb,
+        zhfyl_tb,
+        zhpfl_tb
+        from acd_zhpfl_khq
+        where 1 = 1
+        and tjdate = #{tjDate}
+        <if test="comnameSgs != null and comnameSgs != ''">
+            and comname_sgs like concat('%', #{comnameSgs}, '%')
+        </if>
+        order by zhpfl desc
+    </select>
+
+    <!-- ==================== 新增表：车险结案率-部门 ==================== -->
+    <select id="getPacllBmData" resultType="com.example.demo.entity.AcdPacllBm">
+        <!-- select
+        tjdate,
+        tjdate as maxTjTime,
+        idd,
+        comcode,
+        comname,
+        xzl,
+        yjl,
+        wjl,
+        wjl_qn,
+        pacll,
+        wjxs,
+        rjwj,
+        wjl_fr,
+        wjxs_fr,
+        rjwj_fr,
+        wjxs_rs,
+        wjl - wjl_fr as rswj,
+        round(cast(yjl as real) / cast(xzl as real), 4) as lajal,
+        cast(wjl - wjl_fr as real) / cast(wjl as real) as rs_zb
+        from acd_pacll_bm
+        where tjdate = #{tjDate}
+        and comname is not null
+        and comcode not in ('51019944','51019907')
+        and comname &lt;&gt; '个非' -->
+
+        select case when a.comname ='理赔中心在线理赔分部' then 1 
+        when a.comname ='理赔中心线下理赔分部' then 2
+        when a.comname ='非成都查勘-非人' then 3
+        when a.comname ='非成都查勘-涉人' then 4
+        when a.comname ='理赔中心新能源/网约车分部' then 5
+        when a.comname ='理赔中心商用车分部' then 6
+        when a.comname ='理赔中心人伤分部' then 7
+        when a.comname ='工程机械' then 8
+        when a.comname ='电梯' then 9
+        when a.comname ='中心整体' then 10
+        else 99 end idd,
+        a.*,
+        a.tjdate as maxTjTime,
+        a.wjl-a.wjl_fr as rswj,
+        round(a.yjl/a.xzl,4) lajal,
+        (a.wjl-a.wjl_fr)/a.wjl as rs_zb
+        from acd_pacll_bm a 
+        where a.tjdate = #{tjDate}
+        and a.comname is not null
+        and a.comcode not in ('51019944','51019907')
+        and a.comname &lt;&gt; '个非'
+        <if test="comname != null and comname != ''">
+            and a.comname like concat('%', #{comname}, '%')
+        </if>
+        order by idd
+    </select>
+
+    <!-- ==================== 新增表：车险结案率-小组 ==================== -->
+    <select id="getPacllXzData" resultType="com.example.demo.entity.AcdPacllXz">
+        select 
+        distinct b.comname, 
+        a.*,
+        a.tjdate as maxTjTime,
+        round(a.wjl_rs/wjl,4) rs_pp
+        from acd_pacll_xz a, acd_ryzd b
+        where a.groupscode = b.groupscode
+        AND a.tjdate = #{tjDate}
+        <if test="comname != null and comname != ''">
+            and b.comname like concat('%', #{comname}, '%')
+        </if>
+        <if test="groups != null and groups != ''">
+            and b.groups like concat('%', #{groups}, '%')
+        </if>
+        order by b.groupscode asc
+    </select>
+
+    <!-- ==================== 新增表：车险结案率-人员 ==================== -->
+    <select id="getPacllRyData" resultType="com.example.demo.entity.AcdPacllRy">
+        <!-- select
+        tjdate,
+        tjdate as maxTjTime,
+        idd,
+        bm,
+        username,
+        usercode,
+        xzajl,
+        yjajl,
+        wjajl,
+        pacll,
+        wjclxs,
+        bsrswjcl,
+        bsrswjclxs,
+        grid,
+        groups,
+        round(cast(yjajl as real) / cast(xzajl as real), 4) as lajal
+        from acd_pacll_ry
+        where tjdate = #{tjDate}
+        and bm not like '%总经理%'
+        and bm not like '%经理%'
+        and bm not like '%科技%'
+        and bm not like '%重客%'
+        and groups is not null
+        and usercode not in ('25332446') -->
+
+        select case when a.bm ='理赔中心在线理赔分部' then 1
+        when a.bm ='理赔中心线下理赔分部' then 2
+        when a.bm ='非成都查勘-非人' then 3
+        when a.bm ='非成都查勘-涉人' then 4
+        when a.bm ='理赔中心新能源/网约车分部' then 5
+        when a.bm ='理赔中心商用车分部' then 6
+        when a.bm ='理赔中心人伤分部' then 7
+        when a.bm ='工程机械' then 8
+        when a.bm ='电梯' then 9
+        when a.bm ='中心整体' then 10
+        else 99 end idd,
+        a.*,
+        a.tjdate as maxTjTime,
+        round(a.yjajl/a.xzajl,4) lajal
+        from acd_pacll_ry a
+        where a.tjdate= #{tjDate}
+        and a.bm not like '%人伤%'
+        and a.bm not like '%理算%'
+        and a.bm not like '%科技%'
+        and a.bm not like '%管理%'
+        and groups is not null
+        and a.usercode not in ('25332446')
+        <if test="bm != null and bm != ''">
+            and a.bm like concat('%', #{bm}, '%')
+        </if>
+        <if test="groups != null and groups != ''">
+            and a.groups like concat('%', #{groups}, '%')
+        </if>
+        <if test="username != null and username != ''">
+            and a.username like concat('%', #{username}, '%')
+        </if>
+        order by idd, groups
+    </select>
+
+    <!-- ==================== 事故年赔付率-支公司 ==================== -->
+    <select id="getPflsgnZgsData" resultType="com.example.demo.entity.AcdPflsgnZgs">
+        select *, tjdate as maxTjTime
+        from acd_pflsgn_zgs
+        where tjdate = #{tjDate}
+        <if test="comnameSgs != null and comnameSgs != ''">
+            and comname_sgs like concat('%', #{comnameSgs}, '%')
+        </if>
+        order by comcode_sgs, comcode
+    </select>
+
+    <!-- ==================== 事故年赔付率-客户群 ==================== -->
+    <select id="getPflsgnKhqData" resultType="com.example.demo.entity.AcdPflsgnKhq">
+        select *, tjdate as maxTjTime
+        from acd_pflsgn_khq
+        where tjdate = #{tjDate}
+        <if test="comnameSgs != null and comnameSgs != ''">
+            and comname_sgs like concat('%', #{comnameSgs}, '%')
+        </if>
+        order by comcode_sgs
+    </select>
+
+    <!-- ==================== 案均赔款-支公司（车险） ==================== -->
+    <select id="getAnjunCxZgsData" resultType="com.example.demo.entity.AcdAnjunCxZgs">
+        select *, tjdate as maxTjTime
+        from acd_anjun_cx_zgs
+        where tjdate = #{tjDate}
+        <if test="comnameSgs != null and comnameSgs != ''">
+            and comname_sgs like concat('%', #{comnameSgs}, '%')
+        </if>
+        order by comcode_sgs, comcode
+    </select>
+
+    <!-- ==================== 案均赔款-客户群（车险） ==================== -->
+    <select id="getAnjunCxKhqData" resultType="com.example.demo.entity.AcdAnjunCxKhq">
+        select *, tjdate as maxTjTime
+        from acd_anjun_cx_khq
+        where tjdate = #{tjDate}
+        <if test="comnameSgs != null and comnameSgs != ''">
+            and comname_sgs like concat('%', #{comnameSgs}, '%')
+        </if>
+        order by comcode_sgs, khq
+    </select>
+
+    <!-- ==================== 案均赔款-新能源（车险） ==================== -->
+    <select id="getAnjunCxXnyData" resultType="com.example.demo.entity.AcdAnjunCxXny">
+        select *, tjdate as maxTjTime
+        from acd_anjun_cx_xny
+        where tjdate = #{tjDate}
+        <if test="comnameSgs != null and comnameSgs != ''">
+            and comname_sgs like concat('%', #{comnameSgs}, '%')
+        </if>
+        order by comcode_sgs, xnyflag
+    </select>
+
+    <!-- ==================== 事故年赔付率-新能源 ==================== -->
+    <select id="getPflsgnXnyData" resultType="com.example.demo.entity.AcdPflsgnXny">
+        select *, tjdate as maxTjTime
+        from acd_pflsgn_xny
+        where tjdate = #{tjDate}
+        <if test="comnameSgs != null and comnameSgs != ''">
+            and comname_sgs like concat('%', #{comnameSgs}, '%')
+        </if>
+        order by comcode_sgs, xnyflag
+    </select>
+
 </mapper>
