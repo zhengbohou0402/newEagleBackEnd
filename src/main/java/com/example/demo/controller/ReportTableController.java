@@ -14,6 +14,8 @@ import com.example.demo.entity.AcdPflsgnZgs;
 import com.example.demo.entity.AcdPflsgnKhq;
 import com.example.demo.entity.AcdPflsgnXny;
 import com.example.demo.entity.AcdAnjunCxZgs;
+import com.example.demo.entity.AcdAnjunCxKhq;
+import com.example.demo.entity.AcdAnjunCxXny;
 import com.example.demo.entity.Result;
 import com.example.demo.service.ReportTableService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +33,8 @@ import java.util.List;
 @RequestMapping("/api")
 @CrossOrigin("*")
 public class ReportTableController {
+
+    private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     @Autowired
     private ReportTableService reportTableService;
@@ -279,7 +283,7 @@ public class ReportTableController {
     ) {
         try {
             if (tjDate == null || tjDate.trim().isEmpty()) {
-                tjDate = LocalDate.now().minusDays(1).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                tjDate = LocalDate.now().minusDays(1).format(DATE_FMT);
             }
             List<AcdPflsgnZgs> data = reportTableService.getPflsgnZgsData(tjDate, comnameSgs);
             return Result.success(data);
@@ -296,7 +300,7 @@ public class ReportTableController {
     ) {
         try {
             if (tjDate == null || tjDate.trim().isEmpty()) {
-                tjDate = LocalDate.now().minusDays(1).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                tjDate = LocalDate.now().minusDays(1).format(DATE_FMT);
             }
             List<AcdPflsgnKhq> data = reportTableService.getPflsgnKhqData(tjDate, comnameSgs);
             return Result.success(data);
@@ -313,7 +317,7 @@ public class ReportTableController {
     ) {
         try {
             if (tjDate == null || tjDate.trim().isEmpty()) {
-                tjDate = LocalDate.now().minusDays(1).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                tjDate = LocalDate.now().minusDays(1).format(DATE_FMT);
             }
             List<AcdPflsgnXny> data = reportTableService.getPflsgnXnyData(tjDate, comnameSgs);
             return Result.success(data);
@@ -332,12 +336,44 @@ public class ReportTableController {
     ) {
         try {
             if (tjDate == null || tjDate.trim().isEmpty()) {
-                tjDate = LocalDate.now().minusDays(1).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                tjDate = LocalDate.now().minusDays(1).format(DATE_FMT);
             }
             List<AcdAnjunCxZgs> data = reportTableService.getAnjunCxZgsData(tjDate, comnameSgs);
             return Result.success(data);
         } catch (Exception e) {
             return Result.error("获取案均赔款-支公司（车险）失败：" + e.getMessage());
+        }
+    }
+
+    @GetMapping("/anjun_cx_khq/list")
+    public Result<List<AcdAnjunCxKhq>> getAnjunCxKhqList(
+            @RequestParam(required = false) String tjDate,
+            @RequestParam(required = false) String comnameSgs
+    ) {
+        try {
+            if (tjDate == null || tjDate.trim().isEmpty()) {
+                tjDate = LocalDate.now().minusDays(1).format(DATE_FMT);
+            }
+            List<AcdAnjunCxKhq> data = reportTableService.getAnjunCxKhqData(tjDate, comnameSgs);
+            return Result.success(data);
+        } catch (Exception e) {
+            return Result.error("获取案均赔款-客户群（车险）失败：" + e.getMessage());
+        }
+    }
+
+    @GetMapping("/anjun_cx_xny/list")
+    public Result<List<AcdAnjunCxXny>> getAnjunCxXnyList(
+            @RequestParam(required = false) String tjDate,
+            @RequestParam(required = false) String comnameSgs
+    ) {
+        try {
+            if (tjDate == null || tjDate.trim().isEmpty()) {
+                tjDate = LocalDate.now().minusDays(1).format(DATE_FMT);
+            }
+            List<AcdAnjunCxXny> data = reportTableService.getAnjunCxXnyData(tjDate, comnameSgs);
+            return Result.success(data);
+        } catch (Exception e) {
+            return Result.error("获取案均赔款-新能源（车险）失败：" + e.getMessage());
         }
     }
 }

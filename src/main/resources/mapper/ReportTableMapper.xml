@@ -374,6 +374,28 @@
         order by comcode_sgs, comcode
     </select>
 
+    <!-- ==================== 案均赔款-客户群（车险） ==================== -->
+    <select id="getAnjunCxKhqData" resultType="com.example.demo.entity.AcdAnjunCxKhq">
+        select *, tjdate as maxTjTime
+        from acd_anjun_cx_khq
+        where tjdate = #{tjDate}
+        <if test="comnameSgs != null and comnameSgs != ''">
+            and comname_sgs like concat('%', #{comnameSgs}, '%')
+        </if>
+        order by comcode_sgs, khq
+    </select>
+
+    <!-- ==================== 案均赔款-新能源（车险） ==================== -->
+    <select id="getAnjunCxXnyData" resultType="com.example.demo.entity.AcdAnjunCxXny">
+        select *, tjdate as maxTjTime
+        from acd_anjun_cx_xny
+        where tjdate = #{tjDate}
+        <if test="comnameSgs != null and comnameSgs != ''">
+            and comname_sgs like concat('%', #{comnameSgs}, '%')
+        </if>
+        order by comcode_sgs, xnyflag
+    </select>
+
     <!-- ==================== 事故年赔付率-新能源 ==================== -->
     <select id="getPflsgnXnyData" resultType="com.example.demo.entity.AcdPflsgnXny">
         select *, tjdate as maxTjTime

@@ -14,6 +14,8 @@ import com.example.demo.entity.AcdPflsgnZgs;
 import com.example.demo.entity.AcdPflsgnKhq;
 import com.example.demo.entity.AcdPflsgnXny;
 import com.example.demo.entity.AcdAnjunCxZgs;
+import com.example.demo.entity.AcdAnjunCxKhq;
+import com.example.demo.entity.AcdAnjunCxXny;
 
 import java.util.List;
 
@@ -72,4 +74,10 @@ public interface ReportTableService {
 
     /** 案均赔款-支公司（车险） */
     List<AcdAnjunCxZgs> getAnjunCxZgsData(String tjDate, String comnameSgs);
+
+    /** 案均赔款-客户群（车险） */
+    List<AcdAnjunCxKhq> getAnjunCxKhqData(String tjDate, String comnameSgs);
+
+    /** 案均赔款-新能源（车险） */
+    List<AcdAnjunCxXny> getAnjunCxXnyData(String tjDate, String comnameSgs);
 }

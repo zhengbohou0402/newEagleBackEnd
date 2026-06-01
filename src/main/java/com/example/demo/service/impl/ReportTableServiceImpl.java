@@ -14,6 +14,8 @@ import com.example.demo.entity.AcdPflsgnZgs;
 import com.example.demo.entity.AcdPflsgnKhq;
 import com.example.demo.entity.AcdPflsgnXny;
 import com.example.demo.entity.AcdAnjunCxZgs;
+import com.example.demo.entity.AcdAnjunCxKhq;
+import com.example.demo.entity.AcdAnjunCxXny;
 import com.example.demo.mapper.ReportTableMapper;
 import com.example.demo.service.ReportTableService;
 import org.springframework.stereotype.Service;
@@ -106,5 +108,15 @@ public class ReportTableServiceImpl implements ReportTableService {
     @Override
     public List<AcdAnjunCxZgs> getAnjunCxZgsData(String tjDate, String comnameSgs) {
         return reportTableMapper.getAnjunCxZgsData(tjDate, comnameSgs);
+    }
+
+    @Override
+    public List<AcdAnjunCxKhq> getAnjunCxKhqData(String tjDate, String comnameSgs) {
+        return reportTableMapper.getAnjunCxKhqData(tjDate, comnameSgs);
+    }
+
+    @Override
+    public List<AcdAnjunCxXny> getAnjunCxXnyData(String tjDate, String comnameSgs) {
+        return reportTableMapper.getAnjunCxXnyData(tjDate, comnameSgs);
     }
 }
