@@ -10,6 +10,10 @@ import com.example.demo.entity.AcdZhpflKhq;
 import com.example.demo.entity.AcdPacllBm;
 import com.example.demo.entity.AcdPacllXz;
 import com.example.demo.entity.AcdPacllRy;
+import com.example.demo.entity.AcdPflsgnZgs;
+import com.example.demo.entity.AcdPflsgnKhq;
+import com.example.demo.entity.AcdPflsgnXny;
+import com.example.demo.entity.AcdAnjunCxZgs;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import java.util.List;
@@ -84,6 +88,34 @@ public interface ReportTableMapper{
             @Param("bm") String bm,
             @Param("groups") String groups,
             @Param("username") String username
+    );
+
+    // ==================== 事故年赔付率 ====================
+
+    /** 事故年赔付率-支公司 */
+    List<AcdPflsgnZgs> getPflsgnZgsData(
+            @Param("tjDate") String tjDate,
+            @Param("comnameSgs") String comnameSgs
+    );
+
+    /** 事故年赔付率-客户群 */
+    List<AcdPflsgnKhq> getPflsgnKhqData(
+            @Param("tjDate") String tjDate,
+            @Param("comnameSgs") String comnameSgs
+    );
+
+    /** 事故年赔付率-新能源 */
+    List<AcdPflsgnXny> getPflsgnXnyData(
+            @Param("tjDate") String tjDate,
+            @Param("comnameSgs") String comnameSgs
+    );
+
+    // ==================== 案均赔款 ====================
+
+    /** 案均赔款-支公司（车险） */
+    List<AcdAnjunCxZgs> getAnjunCxZgsData(
+            @Param("tjDate") String tjDate,
+            @Param("comnameSgs") String comnameSgs
     );
 
 }

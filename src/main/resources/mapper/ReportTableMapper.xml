@@ -306,8 +306,8 @@
         and bm not like '%重客%'
         and groups is not null
         and usercode not in ('25332446') -->
-        
-        select case when a.bm ='理赔中心在线理赔分部' then 1 
+
+        select case when a.bm ='理赔中心在线理赔分部' then 1
         when a.bm ='理赔中心线下理赔分部' then 2
         when a.bm ='非成都查勘-非人' then 3
         when a.bm ='非成都查勘-涉人' then 4
@@ -339,6 +339,50 @@
             and a.username like concat('%', #{username}, '%')
         </if>
         order by idd, groups
+    </select>
+
+    <!-- ==================== 事故年赔付率-支公司 ==================== -->
+    <select id="getPflsgnZgsData" resultType="com.example.demo.entity.AcdPflsgnZgs">
+        select *, tjdate as maxTjTime
+        from acd_pflsgn_zgs
+        where tjdate = #{tjDate}
+        <if test="comnameSgs != null and comnameSgs != ''">
+            and comname_sgs like concat('%', #{comnameSgs}, '%')
+        </if>
+        order by comcode_sgs, comcode
+    </select>
+
+    <!-- ==================== 事故年赔付率-客户群 ==================== -->
+    <select id="getPflsgnKhqData" resultType="com.example.demo.entity.AcdPflsgnKhq">
+        select *, tjdate as maxTjTime
+        from acd_pflsgn_khq
+        where tjdate = #{tjDate}
+        <if test="comnameSgs != null and comnameSgs != ''">
+            and comname_sgs like concat('%', #{comnameSgs}, '%')
+        </if>
+        order by comcode_sgs
+    </select>
+
+    <!-- ==================== 案均赔款-支公司（车险） ==================== -->
+    <select id="getAnjunCxZgsData" resultType="com.example.demo.entity.AcdAnjunCxZgs">
+        select *, tjdate as maxTjTime
+        from acd_anjun_cx_zgs
+        where tjdate = #{tjDate}
+        <if test="comnameSgs != null and comnameSgs != ''">
+            and comname_sgs like concat('%', #{comnameSgs}, '%')
+        </if>
+        order by comcode_sgs, comcode
+    </select>
+
+    <!-- ==================== 事故年赔付率-新能源 ==================== -->
+    <select id="getPflsgnXnyData" resultType="com.example.demo.entity.AcdPflsgnXny">
+        select *, tjdate as maxTjTime
+        from acd_pflsgn_xny
+        where tjdate = #{tjDate}
+        <if test="comnameSgs != null and comnameSgs != ''">
+            and comname_sgs like concat('%', #{comnameSgs}, '%')
+        </if>
+        order by comcode_sgs, xnyflag
     </select>
 
 </mapper>

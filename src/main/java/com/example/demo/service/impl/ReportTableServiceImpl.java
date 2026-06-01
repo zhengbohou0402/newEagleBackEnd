@@ -10,6 +10,10 @@ import com.example.demo.entity.AcdZhpflKhq;
 import com.example.demo.entity.AcdPacllBm;
 import com.example.demo.entity.AcdPacllXz;
 import com.example.demo.entity.AcdPacllRy;
+import com.example.demo.entity.AcdPflsgnZgs;
+import com.example.demo.entity.AcdPflsgnKhq;
+import com.example.demo.entity.AcdPflsgnXny;
+import com.example.demo.entity.AcdAnjunCxZgs;
 import com.example.demo.mapper.ReportTableMapper;
 import com.example.demo.service.ReportTableService;
 import org.springframework.stereotype.Service;
@@ -78,5 +82,29 @@ public class ReportTableServiceImpl implements ReportTableService {
     @Override
     public List<AcdPacllRy> getPacllRyData(String tjDate, String bm, String groups, String username) {
         return reportTableMapper.getPacllRyData(tjDate, bm, groups, username);
+    }
+
+    // ==================== 事故年赔付率 ====================
+
+    @Override
+    public List<AcdPflsgnZgs> getPflsgnZgsData(String tjDate, String comnameSgs) {
+        return reportTableMapper.getPflsgnZgsData(tjDate, comnameSgs);
+    }
+
+    @Override
+    public List<AcdPflsgnKhq> getPflsgnKhqData(String tjDate, String comnameSgs) {
+        return reportTableMapper.getPflsgnKhqData(tjDate, comnameSgs);
+    }
+
+    @Override
+    public List<AcdPflsgnXny> getPflsgnXnyData(String tjDate, String comnameSgs) {
+        return reportTableMapper.getPflsgnXnyData(tjDate, comnameSgs);
+    }
+
+    // ==================== 案均赔款 ====================
+
+    @Override
+    public List<AcdAnjunCxZgs> getAnjunCxZgsData(String tjDate, String comnameSgs) {
+        return reportTableMapper.getAnjunCxZgsData(tjDate, comnameSgs);
     }
 }

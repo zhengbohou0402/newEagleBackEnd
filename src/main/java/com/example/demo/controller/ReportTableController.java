@@ -10,6 +10,10 @@ import com.example.demo.entity.AcdZhpflKhq;
 import com.example.demo.entity.AcdPacllBm;
 import com.example.demo.entity.AcdPacllXz;
 import com.example.demo.entity.AcdPacllRy;
+import com.example.demo.entity.AcdPflsgnZgs;
+import com.example.demo.entity.AcdPflsgnKhq;
+import com.example.demo.entity.AcdPflsgnXny;
+import com.example.demo.entity.AcdAnjunCxZgs;
 import com.example.demo.entity.Result;
 import com.example.demo.service.ReportTableService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +23,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @RestController
@@ -260,6 +266,78 @@ public class ReportTableController {
             return Result.success(data);
         } catch (Exception e) {
             return Result.error("获取车险结案率-人员失败：" + e.getMessage());
+        }
+    }
+
+    // ==================== 事故年赔付率 ====================
+
+    /** 事故年赔付率-支公司 */
+    @GetMapping("/pflsgn_zgs/list")
+    public Result<List<AcdPflsgnZgs>> getPflsgnZgsList(
+            @RequestParam(required = false) String tjDate,
+            @RequestParam(required = false) String comnameSgs
+    ) {
+        try {
+            if (tjDate == null || tjDate.trim().isEmpty()) {
+                tjDate = LocalDate.now().minusDays(1).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            }
+            List<AcdPflsgnZgs> data = reportTableService.getPflsgnZgsData(tjDate, comnameSgs);
+            return Result.success(data);
+        } catch (Exception e) {
+            return Result.error("获取事故年赔付率-支公司失败：" + e.getMessage());
+        }
+    }
+
+    /** 事故年赔付率-客户群 */
+    @GetMapping("/pflsgn_khq/list")
+    public Result<List<AcdPflsgnKhq>> getPflsgnKhqList(
+            @RequestParam(required = false) String tjDate,
+            @RequestParam(required = false) String comnameSgs
+    ) {
+        try {
+            if (tjDate == null || tjDate.trim().isEmpty()) {
+                tjDate = LocalDate.now().minusDays(1).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            }
+            List<AcdPflsgnKhq> data = reportTableService.getPflsgnKhqData(tjDate, comnameSgs);
+            return Result.success(data);
+        } catch (Exception e) {
+            return Result.error("获取事故年赔付率-客户群失败：" + e.getMessage());
+        }
+    }
+
+    /** 事故年赔付率-新能源 */
+    @GetMapping("/pflsgn_xny/list")
+    public Result<List<AcdPflsgnXny>> getPflsgnXnyList(
+            @RequestParam(required = false) String tjDate,
+            @RequestParam(required = false) String comnameSgs
+    ) {
+        try {
+            if (tjDate == null || tjDate.trim().isEmpty()) {
+                tjDate = LocalDate.now().minusDays(1).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            }
+            List<AcdPflsgnXny> data = reportTableService.getPflsgnXnyData(tjDate, comnameSgs);
+            return Result.success(data);
+        } catch (Exception e) {
+            return Result.error("获取事故年赔付率-新能源失败：" + e.getMessage());
+        }
+    }
+
+    // ==================== 案均赔款 ====================
+
+    /** 案均赔款-支公司（车险） */
+    @GetMapping("/anjun_cx_zgs/list")
+    public Result<List<AcdAnjunCxZgs>> getAnjunCxZgsList(
+            @RequestParam(required = false) String tjDate,
+            @RequestParam(required = false) String comnameSgs
+    ) {
+        try {
+            if (tjDate == null || tjDate.trim().isEmpty()) {
+                tjDate = LocalDate.now().minusDays(1).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            }
+            List<AcdAnjunCxZgs> data = reportTableService.getAnjunCxZgsData(tjDate, comnameSgs);
+            return Result.success(data);
+        } catch (Exception e) {
+            return Result.error("获取案均赔款-支公司（车险）失败：" + e.getMessage());
         }
     }
 }

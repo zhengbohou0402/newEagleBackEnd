@@ -10,6 +10,10 @@ import com.example.demo.entity.AcdZhpflKhq;
 import com.example.demo.entity.AcdPacllBm;
 import com.example.demo.entity.AcdPacllXz;
 import com.example.demo.entity.AcdPacllRy;
+import com.example.demo.entity.AcdPflsgnZgs;
+import com.example.demo.entity.AcdPflsgnKhq;
+import com.example.demo.entity.AcdPflsgnXny;
+import com.example.demo.entity.AcdAnjunCxZgs;
 
 import java.util.List;
 
@@ -52,4 +56,20 @@ public interface ReportTableService {
 
     /** 车险结案率-人员 */
     List<AcdPacllRy> getPacllRyData(String tjDate, String bm, String groups, String username);
+
+    // ==================== 事故年赔付率 ====================
+
+    /** 事故年赔付率-支公司 */
+    List<AcdPflsgnZgs> getPflsgnZgsData(String tjDate, String comnameSgs);
+
+    /** 事故年赔付率-客户群 */
+    List<AcdPflsgnKhq> getPflsgnKhqData(String tjDate, String comnameSgs);
+
+    /** 事故年赔付率-新能源 */
+    List<AcdPflsgnXny> getPflsgnXnyData(String tjDate, String comnameSgs);
+
+    // ==================== 案均赔款 ====================
+
+    /** 案均赔款-支公司（车险） */
+    List<AcdAnjunCxZgs> getAnjunCxZgsData(String tjDate, String comnameSgs);
 }
