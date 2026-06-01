@@ -207,7 +207,7 @@
 
     <!-- ==================== 新增表：车险结案率-部门 ==================== -->
     <select id="getPacllBmData" resultType="com.example.demo.entity.AcdPacllBm">
-        select
+        <!-- select
         tjdate,
         tjdate as maxTjTime,
         idd,
@@ -231,7 +231,28 @@
         where tjdate = #{tjDate}
         and comname is not null
         and comcode not in ('51019944','51019907')
-        and comname &lt;&gt; '键科'
+        and comname &lt;&gt; '个非' -->
+
+        select case when a.comname ='理赔中心在线理赔分部' then 1 
+        when a.comname ='理赔中心线下理赔分部' then 2
+        when a.comname ='非成都查勘-非人' then 3
+        when a.comname ='非成都查勘-涉人' then 4
+        when a.comname ='理赔中心新能源/网约车分部' then 5
+        when a.comname ='理赔中心商用车分部' then 6
+        when a.comname ='理赔中心人伤分部' then 7
+        when a.comname ='工程机械' then 8
+        when a.comname ='电梯' then 9
+        when a.comname ='中心整体' then 10
+        else 99 end idd,
+        a.*,
+        a.wjl-a.wjl_fr as rswj,
+        round(a.yjl/a.xzl,4) lajal,
+        (a.wjl-a.wjl_fr)/a.wjl as rs_zb
+        from acd_pacll_bm a 
+        where a.tjdate = #{tjDate}
+        and a.comname is not null
+        and a.comcode not in ('51019944','51019907')
+        and a.comname &lt;&gt; '个非'
         <if test="comname != null and comname != ''">
             and comname like concat('%', #{comname}, '%')
         </if>
@@ -240,22 +261,14 @@
 
     <!-- ==================== 新增表：车险结案率-小组 ==================== -->
     <select id="getPacllXzData" resultType="com.example.demo.entity.AcdPacllXz">
-        select
-        tjdate,
-        tjdate as maxTjTime,
-        comname,
-        groups,
-        groupscode,
-        xzl,
-        yjl,
-        wjl,
-        wjl_fr,
-        wjl_rs,
-        pacll,
-        round(cast(yjl as real) / cast(xzl as real), 4) as lajal,
-        round(cast(wjl_rs as real) / cast(wjl as real), 4) as rs_pp
-        from acd_pacll_xz
-        where tjdate = #{tjDate}
+        select 
+        distinct b.comname, 
+        a.*,
+        a.tjdate as maxTjTime,
+        round(a.wjl_rs/wjl,4) rs_pp
+        from acd_pacll_xz a, acd_ryzd b
+        where a.groupscode = b.groupscode
+        AND a.tjdate = #{tjDate}
         <if test="comname != null and comname != ''">
             and comname like concat('%', #{comname}, '%')
         </if>
@@ -267,7 +280,7 @@
 
     <!-- ==================== 新增表：车险结案率-人员 ==================== -->
     <select id="getPacllRyData" resultType="com.example.demo.entity.AcdPacllRy">
-        select
+        <!-- select
         tjdate,
         tjdate as maxTjTime,
         idd,
@@ -291,7 +304,28 @@
         and bm not like '%科技%'
         and bm not like '%重客%'
         and groups is not null
-        and usercode not in ('25332446')
+        and usercode not in ('25332446') -->
+        
+        select case when a.bm ='理赔中心在线理赔分部' then 1 
+        when a.bm ='理赔中心线下理赔分部' then 2
+        when a.bm ='非成都查勘-非人' then 3
+        when a.bm ='非成都查勘-涉人' then 4
+        when a.bm ='理赔中心新能源/网约车分部' then 5
+        when a.bm ='理赔中心商用车分部' then 6
+        when a.bm ='理赔中心人伤分部' then 7
+        when a.bm ='工程机械' then 8
+        when a.bm ='电梯' then 9
+        when a.bm ='中心整体' then 10
+        else 99 end idd,
+        a.*,round(a.yjajl/a.xzajl,4) lajal
+        from acd_pacll_ry a
+        where a.tjdate= #{tjDate}
+        and a.bm not like '%人伤%'
+        and a.bm not like '%理算%'
+        and a.bm not like '%科技%'
+        and a.bm not like '%管理%'
+        and groups is not null
+        and a.usercode not in ('25332446')
         <if test="bm != null and bm != ''">
             and bm like concat('%', #{bm}, '%')
         </if>
