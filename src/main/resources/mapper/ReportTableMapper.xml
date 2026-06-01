@@ -254,7 +254,7 @@
         and a.comcode not in ('51019944','51019907')
         and a.comname &lt;&gt; '个非'
         <if test="comname != null and comname != ''">
-            and comname like concat('%', #{comname}, '%')
+            and a.comname like concat('%', #{comname}, '%')
         </if>
         order by idd
     </select>
@@ -270,12 +270,12 @@
         where a.groupscode = b.groupscode
         AND a.tjdate = #{tjDate}
         <if test="comname != null and comname != ''">
-            and comname like concat('%', #{comname}, '%')
+            and b.comname like concat('%', #{comname}, '%')
         </if>
         <if test="groups != null and groups != ''">
-            and groups like concat('%', #{groups}, '%')
+            and b.groups like concat('%', #{groups}, '%')
         </if>
-        order by groupscode asc
+        order by b.groupscode asc
     </select>
 
     <!-- ==================== 新增表：车险结案率-人员 ==================== -->
@@ -327,13 +327,13 @@
         and groups is not null
         and a.usercode not in ('25332446')
         <if test="bm != null and bm != ''">
-            and bm like concat('%', #{bm}, '%')
+            and a.bm like concat('%', #{bm}, '%')
         </if>
         <if test="groups != null and groups != ''">
-            and groups like concat('%', #{groups}, '%')
+            and a.groups like concat('%', #{groups}, '%')
         </if>
         <if test="username != null and username != ''">
-            and username like concat('%', #{username}, '%')
+            and a.username like concat('%', #{username}, '%')
         </if>
         order by idd, groups
     </select>
